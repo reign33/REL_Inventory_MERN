@@ -1,15 +1,13 @@
-import Category from "../model/Category.js";
+import Categories from "../model/Category.js";
 import jwt from "jsonwebtoken";
 import getTokenFrom from "../utils/getTokenFrom.js";
 import config from "../utils/config.js";
 import User from "../model/User.js";
-import uploadFile from "../utils/uploadFile.js";
-import { deleteObject, ref } from "firebase/storage";
-import storage from "../utils/firebaseConfig.js";
+
 
 async function getCategoryInfo(_, res, next) {
   try {
-    const category = await Category.find({});
+    const category = await Categories.find({});
     const categoryCount = category.length;
     return res.send(`<p>Total Category: ${categoryCount}</p>`);
   } catch (error) {
@@ -20,11 +18,10 @@ async function getCategoryInfo(_, res, next) {
 async function getCategories(req, res, next) {
   try {
     const decodedToken = jwt.verify(getTokenFrom(req), config.JWT_SECRET);
-    const category = await Category.find({ userId: decodedToken.id }).populate(
+    const category = await Categories.find({ userId: decodedToken.id }).populate(
       "userId",
       {
         username: 1,
-        name: 1,
       }
     );
     return res.json(category);
@@ -37,7 +34,7 @@ async function getCategory(req, res, next) {
   const id = req.params.id;
 
   try {
-    const category = await Category.findById(id);
+    const category = await Categories.findById(id);
     if (!category) return res.status(404).json({ message: "Category not found!" });
     return res.json(category);
   } catch (error) {
@@ -51,11 +48,7 @@ async function deleteCategory(req, res, next) {
 
   try {
     const user = await User.findById(decodedToken.id);
-    const category = await Category.findByIdAndDelete(id);
-
-    // Delete photo from Firebase Storage
-    const photoRef = ref(storage, note.photoInfo.filename);
-    await deleteObject(photoRef);
+    const category = await Categories.findByIdAndDelete(id);
 
     user.category = user.category.filter(
       (categoryId) => categoryId.toString() !== category._id.toString()
@@ -70,7 +63,8 @@ async function deleteCategory(req, res, next) {
 
 async function createCategory(req, res, next) {
   const body = req.body;
-  const file = req.file;
+
+  console.log('createCategory', body);
 
   try {
     const decodedToken = jwt.verify(getTokenFrom(req), config.JWT_SECRET);
@@ -85,16 +79,12 @@ async function createCategory(req, res, next) {
       return res.status(400).json({ error: "content missing" });
     }
 
-    const photoInfo = await uploadFile(file);
-
-    const category = new Category({
+    const category = new Categories({
       content: body.content.trim(),
-      important: body.important || false,
       userId: user.id,
-      photoInfo,
     });
 
-    const savedCategory = await category.save().then((result) => result);
+    const savedCategory = await category.save();
 
     user.category = user.category.concat(savedCategory._id); //sa schema di gumagana ung id kaya _id
     await user.save();
@@ -107,14 +97,13 @@ async function createCategory(req, res, next) {
 
 async function updateCategory(req, res, next) {
   const id = req.params.id;
-  const { content, important } = req.body;
+  const { content } = req.body;
   const category = {
-    content,
-    important,
+    content
   };
 
   try {
-    const updatedCategory = await Category.findByIdAndUpdate(id, category, {
+    const updatedCategory = await Categories.findByIdAndUpdate(id, category, {
       new: true,
       runValidators: true,
       context: "query",
@@ -122,7 +111,7 @@ async function updateCategory(req, res, next) {
 
     if (!updatedCategory) return res.status(404).send({ error: "Category not found!" });
 
-    return res.status(200).json(updatedCategory);
+    return res.status(200).json({updatedCategory});
   } catch (error) {
     next(error);
   }

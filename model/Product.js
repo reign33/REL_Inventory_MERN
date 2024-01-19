@@ -1,10 +1,20 @@
 import mongoose from "mongoose";
 
-const categorySchema = new mongoose.Schema({
-  content: {
+const productSchema = new mongoose.Schema({
+  name: {
     type: String,
-    minLength: 3,
-    required: true,
+  },
+  category: {
+    type: String,
+  },
+  quantity: {
+    type: Number,
+  },
+  unit: {
+    type: String,
+  },
+  price: {
+    type: Number,
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -12,7 +22,7 @@ const categorySchema = new mongoose.Schema({
   },
 });
 
-categorySchema.set("toJSON", {
+productSchema.set("toJSON", {
   transform: (_document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
     delete returnedObject._id;
@@ -20,8 +30,8 @@ categorySchema.set("toJSON", {
   },
 });
 
-const Categories = mongoose.model("Categories", categorySchema);
+const Products = mongoose.model("Products", productSchema);
 
-export default Categories;
+export default Products;
 
 //npm i bcrypt to transform passwordhash to encrypted type

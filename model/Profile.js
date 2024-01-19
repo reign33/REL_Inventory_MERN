@@ -1,10 +1,9 @@
 import mongoose from "mongoose";
 
-const categorySchema = new mongoose.Schema({
-  content: {
-    type: String,
-    minLength: 3,
-    required: true,
+const profileSchema = new mongoose.Schema({
+  photoInfo: {
+    url: String,
+    filename: String,
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -12,7 +11,7 @@ const categorySchema = new mongoose.Schema({
   },
 });
 
-categorySchema.set("toJSON", {
+profileSchema.set("toJSON", {
   transform: (_document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
     delete returnedObject._id;
@@ -20,8 +19,8 @@ categorySchema.set("toJSON", {
   },
 });
 
-const Categories = mongoose.model("Categories", categorySchema);
+const Profiles = mongoose.model("Profiles", profileSchema);
 
-export default Categories;
+export default Profiles;
 
 //npm i bcrypt to transform passwordhash to encrypted type
