@@ -23,7 +23,7 @@ connectToDB(MONGODB_URI);
 morgan.token("body", function (req, res) {
   return JSON.stringify(req.body);
 });
-// app.use(express.static('dist'));
+app.use(express.static('dist'));
 app.use(cors());
 app.use(express.json());
 app.use(morgan(":method :url :status :body")); //terminal logger
